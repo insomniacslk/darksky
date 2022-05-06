@@ -2,6 +2,7 @@ package forecast
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"strconv"
@@ -92,6 +93,7 @@ type Forecast struct {
 	Flags     Flags     `json:"flags,omitempty"`
 	APICalls  int       `json:"apicalls,omitempty"`
 	Code      int       `json:"code,omitempty"`
+	Error     string    `json:"error,omitempty"`
 }
 
 type Units string
@@ -173,6 +175,9 @@ func Get(key string, lat string, long string, time string, units Units, lang Lan
 	f, err := FromJSON(res.Body)
 	if err != nil {
 		return nil, err
+	}
+	if f.Code >= 400 {
+		return nil, errors.New(f.Error)
 	}
 
 	calls, _ := strconv.Atoi(res.Header.Get("X-Forecast-API-Calls"))
